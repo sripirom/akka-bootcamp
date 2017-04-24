@@ -14,7 +14,6 @@ namespace WinTail
             // YOU NEED TO FILL IN HERE
             MyActorSystem = ActorSystem.Create("MyActorSystem");
 
-            PrintInstructions();
 
             // time to make your first actors!
             //YOU NEED TO FILL IN HERE
