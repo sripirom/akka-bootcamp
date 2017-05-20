@@ -11,13 +11,10 @@ namespace WinTail
     public class FileValidationActor : UntypedActor
     {
         private readonly IActorRef _conosleWriterActor;
-        private readonly IActorRef _tailCoordinatorActor;
 
-
-        public FileValidationActor(IActorRef consoleWriterActor, IActorRef tailCorrdinatorActor)
+        public FileValidationActor(IActorRef consoleWriterActor)
         {
             _conosleWriterActor = consoleWriterActor;
-            _tailCoordinatorActor = tailCorrdinatorActor;
         }
 
         protected override void OnReceive(object message)
@@ -41,8 +38,8 @@ namespace WinTail
                         String.Format("Starting processing for {0}", msg)));
 
                     // start coordinator
-                    _tailCoordinatorActor.Tell(new TailCoordinatorActor.StartTail(
-                        msg, _conosleWriterActor));
+                    Context.ActorSelection(Helpers.ActorPaths.TailCoordinatorActor.Path).Tell(
+                        new TailCoordinatorActor.StartTail(msg, _conosleWriterActor));
                 }
                 else {
                     // signal that input was bad

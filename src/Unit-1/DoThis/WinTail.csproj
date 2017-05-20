@@ -56,6 +56,8 @@
     <Compile Include="ConsoleReaderActor.cs" />
     <Compile Include="ConsoleWriterActor.cs" />
     <Compile Include="FileObserver.cs" />
+    <Compile Include="Helpers\ActorMetaData.cs" />
+    <Compile Include="Helpers\ActorPaths.cs" />
     <Compile Include="Messages.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
