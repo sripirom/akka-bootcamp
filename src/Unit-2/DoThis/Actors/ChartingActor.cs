@@ -7,7 +7,7 @@ using System.Windows.Forms;
 
 namespace ChartApp.Actors
 {
-    public class ChartingActor : ReceiveActor
+    public class ChartingActor : ReceiveActor, IWithBoundedStash
     {
         /// <summary>
         /// Maximum number of points we will allow in a series
@@ -72,6 +72,8 @@ namespace ChartApp.Actors
 
         private readonly Button _pauseButton;
 
+       
+
         public ChartingActor(Chart chart, Button pauseButton) 
             : this(chart, new Dictionary<string, Series>(), pauseButton)
         {
@@ -86,6 +88,8 @@ namespace ChartApp.Actors
             Charting();
         }
 
+        public IStash Stash { get; set; }
+
         private void Charting()
         {
             Receive<InitializeChart>(ic => HandleInitialize(ic));
@@ -99,14 +103,19 @@ namespace ChartApp.Actors
             });
         }
 
-
-
         private void Paused()
         {
+            Receive<AddSeries>(addSeries => Stash.Stash());
+            Receive<RemoveSeries>(removeSeries => Stash.Stash());
             Receive<Metric>(metric => HandleMetricsPaused(metric));
-            Receive<TogglePause>(pause => {
+            Receive<TogglePause>(pause =>
+            {
                 SetPauseButtonText(false);
                 UnbecomeStacked();
+
+                // ChartingActor is leaving the Paused state, put messages back
+                // into mailbox for processing under new behavior
+                Stash.UnstashAll();
             });
         }
 
@@ -183,6 +192,7 @@ namespace ChartApp.Actors
                 && _seriesIndex.ContainsKey(metric.Series))
             {
                 var series = _seriesIndex[metric.Series];
+                if (series.Points == null) return; // means we're shutting down
                 //set the Y value to zero when we're paused
                 series.Points.AddXY(xPosCounter++, 0.0d);
                 while (series.Points.Count > MaxPoints) series.Points.RemoveAt(0);
